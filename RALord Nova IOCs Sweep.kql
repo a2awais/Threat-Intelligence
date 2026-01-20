@@ -1,6 +1,6 @@
 // Intel Ref: https://github.com/TheRavenFile/Daily-Hunt/blob/main/RA%20Lord%20Ransomware%3A%20NOVA
 let RALordIOCs =
-    externaldata(IOCFileName: string, SHA256: string)
+    externaldata(FileName: string, SHA256: string)
     ["https://raw.githubusercontent.com/a2awais/Threat-Intelligence/refs/heads/main/IOCs/RALord-NOVA-Ransomeware.csv"]
     with (format="csv", ignoreFirstRecord=true);
 RALordIOCs
@@ -11,20 +11,21 @@ RALordIOCs
     | where Timestamp > ago(30d)
     | summarize
         LastSeen = max(Timestamp),
+        DeviceName = arg_max(Timestamp, DeviceName),
         FolderPath = arg_max(Timestamp, FolderPath),
         ActionType = arg_max(Timestamp, ActionType),
-        InitiatingProcessFileName = arg_max(Timestamp, InitiatingProcessFileName),
-        DeviceId = arg_max(Timestamp, DeviceId)
+        InitiatingProcessFileName = arg_max(Timestamp, InitiatingProcessFileName)
       by SHA256
 ) on SHA256
 | project
-    IOCFileName,
+    FileName,
     SHA256,
-    GlobalPrevalence,
-    GlobalFirstSeen,
-    GlobalLastSeen,
+    DeviceName,
     LastSeen,
     FolderPath,
     InitiatingProcessFileName,
-    ActionType
+    ActionType,
+    GlobalPrevalence,
+    GlobalFirstSeen,
+    GlobalLastSeen
 | sort by GlobalPrevalence asc
